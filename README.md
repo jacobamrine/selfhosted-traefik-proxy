@@ -9,7 +9,7 @@ Traefik routes incoming HTTP/HTTPS traffic to containers using Docker labels, al
 - Traefik reverse proxy managed with Docker Compose
 - Docker provider with containers hidden by default
 - HTTP and HTTPS entrypoints
-- Let's Encrypt certificate generation using the HTTP challenge
+- Let's Encrypt certificate generation using HTTP challenge or Cloudflare API
 - External Docker network for proxied services
 - Optional Traefik dashboard protected with Basic Auth
 - Environment variables used for configurable values and secrets
@@ -140,8 +140,3 @@ Traefik matched the route but cannot reach the backend container. Check that the
 ### Certificate issues
 
 Check that DNS points to the server, ports `80` and `443` are open, and the ACME email is set correctly.
-
-## Notes
-
-This setup is intended for personal self-hosted projects and homelab-style deployments. It demonstrates Docker Compose, reverse proxy routing, HTTPS certificate management, and Docker networking.
-
