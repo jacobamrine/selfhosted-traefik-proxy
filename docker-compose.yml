@@ -1,6 +1,6 @@
 services:
   traefik:
-    image: traefik:${TRAEFIK_IMAGE}
+    image: traefik:${TRAEFIK_VERSION}
     command:
       - --api=true
       - --api.dashboard=true
@@ -22,7 +22,7 @@ services:
       - "443:443"
       
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
+      - /var/run/docker.sock:/var/run/docker.sock:ro
       - traefik_letsencrypt:/letsencrypt
       
     networks:
@@ -39,8 +39,9 @@ services:
        - traefik.http.routers.traefik.tls.certresolver=le
        - traefik.http.routers.traefik.service=api@internal
 
-       #Basic Auth
-       - traefik.http.middlewares.traefik-auth.basicauth.users=${BASIC_AUTH_HASH}
+       # Dashboard is exposed behind Basic Auth.
+       # Use a strong bcrypt/apr1 hash and consider IP allowlisting or VPN-only access.
+       - traefik.http.middlewares.traefik-auth.basicauth.users=${TRAEFIK_DASHBOARD_AUTH}
        - traefik.http.routers.traefik.middlewares=traefik-auth
 
     restart: unless-stopped
