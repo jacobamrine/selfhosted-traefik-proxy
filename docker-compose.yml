@@ -1,0 +1,54 @@
+services:
+  traefik:
+    image: traefik:${TRAEFIK_IMAGE}
+    command:
+      - --api=true
+      - --api.dashboard=true
+      
+      - --providers.docker=true 
+      - --providers.docker.exposedbydefault=false
+      
+      - --entrypoints.web.address=:80
+      - --entrypoints.websecure.address=:443
+      
+      # SSL 
+      - --certificatesresolvers.le.acme.email=${ACME_EMAIL}
+      - --certificatesresolvers.le.acme.storage=/letsencrypt/acme.json
+      - --certificatesresolvers.le.acme.httpchallenge=true
+      - --certificatesresolvers.le.acme.httpchallenge.entrypoint=web
+      
+    ports:
+      - "80:80"
+      - "443:443"
+      
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - traefik_letsencrypt:/letsencrypt
+      
+    networks:
+      - proxy
+
+    labels:
+       - traefik.enable=true
+       
+       # Router for dashboard/API
+       - traefik.http.routers.traefik.rule=Host(`${TRAEFIK_URL}`) && (PathPrefix(`/api`) || PathPrefix(`/dashboard`))
+       
+       - traefik.http.routers.traefik.entrypoints=websecure
+       - traefik.http.routers.traefik.tls=true
+       - traefik.http.routers.traefik.tls.certresolver=le
+       - traefik.http.routers.traefik.service=api@internal
+
+       #Basic Auth
+       - traefik.http.middlewares.traefik-auth.basicauth.users=${BASIC_AUTH_HASH}
+       - traefik.http.routers.traefik.middlewares=traefik-auth
+
+    restart: unless-stopped
+
+volumes:
+  traefik_letsencrypt:
+
+networks:
+  proxy:
+    external: true
+    name: proxy
